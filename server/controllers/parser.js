@@ -16,7 +16,7 @@ export const getCurrency = async (req, res) => {
             return Array.from(document.querySelectorAll(".tek-moment .block")).map((block) => {
                 return {
                     title: block.querySelector(".title").textContent,
-                    value: block.querySelector(".rate .value").textContent,
+                    value: Number(block.querySelector(".rate .value").textContent),
                 };
             });
         });
@@ -31,22 +31,22 @@ export const getOilCost = async (req, res) => {
 
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
-        await page.goto("https://www.profinance.ru/chart/brent/", {
+        await page.goto("https://quote.rbc.ru/ticker/181206", {
             waitUntil: 'domcontentloaded'
         })
 
-
+        
         let data = await page.evaluate(() => {
             return {
                 title: "Стоимость нефти марки Brent",
-                value: document.querySelector("#tr_Brent_oil #b_Brent_oil").textContent
+                value: Number(document.querySelector(".chart__info__sum").textContent.replace(/\$/, '').replace(/,/ig, '.'))
             }
         });
-
         await browser.close();
 
         return res.json({ message: "Get oil costs successfully", data })
     } catch (error) {
-        res.json({ message: 'Error while getting oil costs' })
+        console.log(error)
+        res.json({ message: 'Error while getting oil costs', error })
     }
 } 

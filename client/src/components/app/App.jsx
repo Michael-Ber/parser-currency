@@ -9,7 +9,7 @@ import { Login } from '../../pages/login/Login';
 import { Register } from '../../pages/register/Register';
 
 import { getMe } from '../../redux/auth/authSlice';
-import { getCurrency, getOilCost } from '../../redux/parser/parserSlice';
+import { getCurrency, getOilCost, firstLoadFinish } from '../../redux/parser/parserSlice';
 
 import { useDispatch } from 'react-redux';
 
@@ -19,12 +19,17 @@ import bgImg from '../../assets/img/bg.jpg';
 function App() {
 
 	const dispatch = useDispatch();
-
+	console.log(Number('$89,81  '.replace(/\$/ig, '').replace(/,/ig, '.')))
 	useEffect(() => {
 		// dispatch(getMe());
-		dispatch(getCurrency());
-		dispatch(getOilCost());
+		getData();
 	}, [])
+
+	const getData = async() => {
+		await dispatch(getCurrency());
+		await dispatch(getOilCost());
+		await dispatch(firstLoadFinish());
+	}
 
 
 

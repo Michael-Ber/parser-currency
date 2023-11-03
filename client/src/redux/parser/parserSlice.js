@@ -1,10 +1,18 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 const initialState = {
-    currency: '',
-    oil: '',
+    currency: {
+        old: '',
+        current: ''
+    },
+    oil: {
+        old: '',
+        current: ''
+    },
     messageCurrency: '',
-    messageOil: ''
+    messageOil: '',
+    errorOil: '',
+    firstLoad: true
 };
 
 const URL = 'http://localhost:3002'
@@ -15,7 +23,6 @@ export const getCurrency = createAsyncThunk(
         try {
             const res = await fetch(`${URL}/currency`);
             const resJSON = res.json();
-            console.log(resJSON);
             return resJSON;
         } catch (error) {
             console.log(error)
@@ -28,7 +35,6 @@ export const getOilCost = createAsyncThunk(
         try {
             const res = await fetch(`${URL}/oil`);
             const resJSON = res.json();
-            console.log(resJSON);
             return resJSON;
         } catch (error) {
             console.log(error)
@@ -39,25 +45,42 @@ export const getOilCost = createAsyncThunk(
 const parserSlice = createSlice({
     name: "currency",
     initialState,
-    reducers: {},
+    reducers: {
+        firstLoadFinish: (state) => { state.firstLoad = false }
+    },
     extraReducers: builder => {
         //CURRENCY
         builder.addCase(getCurrency.pending, state => console.log('pending'))
         builder.addCase(getCurrency.fulfilled, (state, action) => {
-            state.currency = action.payload.data;
+            if(state.firstLoad) {
+                state.currency.old = action.payload.data;
+                state.currency.current = action.payload.data;
+            }else {
+                state.currency.old = state.currency.current;
+                state.currency.current = action.payload.data;
+            }
             state.messageCurrency = action.payload.message;
         })
         builder.addCase(getCurrency.rejected, () => console.log('rejected'))
         //OIL
         builder.addCase(getOilCost.pending, state => console.log('pending'))
         builder.addCase(getOilCost.fulfilled, (state, action) => {
-            state.oil = action.payload.data;
+            if(state.firstLoad) {
+                state.oil.old = action.payload.data;
+                state.oil.current = action.payload.data;
+            }else {
+                state.oil.old = state.oil.current;
+                state.oil.current = action.payload.data;
+            }
             state.messageOil = action.payload.message;
         })
-        builder.addCase(getOilCost.rejected, () => console.log('rejected'))
+        builder.addCase(getOilCost.rejected, (state, action) => {
+            state.error = action.payload.error
+        })
     }
 });
 
 const { reducer, actions } = parserSlice;
+export const { firstLoadFinish } = actions;
 
 export default reducer;
